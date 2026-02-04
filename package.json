@@ -1,0 +1,40 @@
+{
+  "name": "cached-proxy",
+  "version": "0.0.0",
+  "description": "A cached Proxy with optional timeouts per property to simplify complex remote scenarios",
+  "main": "index.js",
+  "module": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "coverage": "mkdir -p ./coverage; c8 report --reporter=text-lcov > ./coverage/lcov.info",
+    "test": "c8 node test.js"
+  },
+  "keywords": [
+    "proxy",
+    "cached",
+    "reflect",
+    "handler"
+  ],
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "author": "Andrea Giammarchi",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "c8": "^10.1.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/cached-proxy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WebReflection/cached-proxy/issues"
+  },
+  "homepage": "https://github.com/WebReflection/cached-proxy#readme"
+}
