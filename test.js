@@ -71,6 +71,23 @@ setTimeout(() => {
 
   delete fn.name;
 
-  const list = Proxy([]);
+  const array = [];
+  const list = Proxy(array, {
+    getCached(target, property, value) {
+      console.assert(array === target);
+      console.assert(typeof property === 'string' || typeof property === 'symbol');
+      return true;
+    }
+  });
+
+  list.push(1, 2, 3);
+  assert(list.length === 3);
+  assert(list[0] === 1);
+  assert(list[1] === 2);
+  assert(list[2] === 3);
+  list.splice(1);
+  assert(list.length === 1);
+  assert(list[0] === 1);
+
   Object.preventExtensions(list);
 }, 1);

@@ -1,5 +1,8 @@
 //@ts-check
 
+const { isArray } = Array;
+const isIndex = /^[0-9]+$/;
+
 const {
   apply,
   construct,
@@ -41,15 +44,18 @@ const prototype = checkTarget(prototypes, 'getPrototypeOf');
 
 const checkProperty = (wm, method, reflect = Reflect[method]) =>
   (handler, target, property, ...rest) => {
-    const timeout = handler.timeout ?? -1;
+    const cached = method + 'Cached';
     const value = method in handler ?
       handler[method](target, property, ...rest) :
       reflect(target, property, ...rest);
 
-    let properties = wm.get(target);
-    if (!properties) wm.set(target, properties = new Map);
-    properties.set(property, value);
-    if (-1 < timeout) setTimeout(drop, timeout, target, property);
+    if (!(cached in handler) || handler[cached](target, property, value)) {
+      let properties = wm.get(target);
+      if (!properties) wm.set(target, properties = new Map);
+      properties.set(property, value);
+      const timeout = handler.timeout ?? -1;
+      if (-1 < timeout) setTimeout(drop, timeout, target, property);
+    }
     return value;
   }
 ;
@@ -156,9 +162,20 @@ class Cached {
   }
 }
 
+class CachedArray extends Cached {
+  get(target, property, receiver) {
+    const value = super.get(target, property, receiver);
+    if (property !== 'length' && !isIndex.test(property)) reset(target);
+    return value;
+  }
+}
+
 const { Proxy: NativeProxy } = globalThis;
 
-const Proxy = (ref, handler = {}) => new NativeProxy(ref, new Cached(handler));
+const Proxy = (ref, handler = {}) => {
+  const Cache = isArray(ref) ? CachedArray : Cached;
+  return new NativeProxy(ref, new Cache(handler));
+};
 
 const reset = ref => {
   descriptors.delete(ref);

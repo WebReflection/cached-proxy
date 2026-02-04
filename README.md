@@ -57,9 +57,9 @@ The example is there to explain that given enough amount of traps, it is possibl
   * **drop** means that the eventually stored value for that property or accessor will be instantly removed from the *cache*, affecting also `ownKeys` but without affecting `isExtensible` and `getPrototypeOf`
   * **reset** means that all weakly related values will be erased per property or target reference, effectively invalidating the whole cache for any trap that has one
 
-The `drop` and `reset` utilities are also exposed via the module where `drop(ref, property)` will invalidate the cache per specific property while `reset(ref)` will invalidate the whole cache per specific *reference*.
+The `drop` and `reset` utilities are also exposed via the module where `drop(ref, property)` will invalidate both `ownKeys` and the cache per specific *property* while `reset(ref)` will invalidate the whole cache per specific *reference*.
 
-Please note: the *reference* is not the *proxied* one, it's the original one you must own, otherwise nothing will happen/work as expected, example:
+**Please note**: the *reference* is not the *proxied* one, it's the original one you must own, otherwise nothing will happen/work as expected, example:
 
 ```js
 import Proxy, { drop, reset  } from 'https://esm.run/cached-proxy';
@@ -79,3 +79,14 @@ reset(proxied);
 ```
 
 This is to avoid leaking the cache intent of the proxy owner/creator.
+
+### Special Cases + `Cached` suffix
+
+  * **arrays** have a `get` trap that *resets* the *cache* if the retrieved property is neither `length` nor an `index` (an unsigned integer, 0 to max array length). This makes usage of a *timeout* almost irrevelant because methods that mutate the array should *drop* properties as needed.
+  * **dom nodes** should likely use no cache due their highly mutable nature, however it is possible to use a handler that checks the returned value by specifying a `getCached(target, property, value)` that if returns `true` will cache the entry, otherwise it won't cache anything and, if the `value` is a function able to mutate the instance, it should likely `reset(target)` *reference* to avoid any undesired cache.
+
+The `Cached` suffix can be used for each of these traps:
+
+  * `getCached`, to skip caching undesired results or reset the cache in case the value is a function with side effects (i.e. methods that mutate internally the proxied reference)
+  * `getOwnPropertyDescriptorCached`, to skip caching a descriptor or reset the cache in case it is an accessor with side effects (i.e. `textContent` or others)
+  * `has`, to skip caching a specific `key in proxy` check
