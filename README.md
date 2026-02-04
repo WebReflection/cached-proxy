@@ -80,6 +80,25 @@ reset(proxied);
 
 This is to avoid leaking the cache intent of the proxy owner/creator.
 
+### Timeout Use Cases
+
+> "*... and what is the timeout about?*"
+
+If the proxy deals with a remote reference that is 100% controlled by the proxy, the *timeout* is actually not necessary at all but some special care is needed if the proxied reference can change any of its public values internally when a method is invoked.
+
+On the other hand, the *timeout* helps keeping cached results just temporarily with the following advances:
+
+  * less RAM needed overall, occasionally things will get cached again which is better than keeping everything cached overtime
+  * the remote reference might change overtime so that synchronous code would ask for new results once but it will free itself from those results (cached assumptions) next time it runs
+    * this is great with listeners that triger not too frequently
+    * this is also great for references that are not meant to change that much within a small amount of time (in milliseconds)
+  * the remote reference has a known cadence of changes (i.e. a scheduled operation that triggers every 30 seconds) and within those 30 seconds it's pointless to ask for the exact same result again
+  * the remote reference uses an expensive computation that doesn't need to be *real time* but could be retrieved occasionally, so that a *click* that asks for updates, if repeatedly clicked, would give for at least 1 second the same result, but eventually will return a new result and provide the same result for another second
+  * the same proxy is used in unknown users' defined code so it's unpredictable how many operations will happen, yet it's OK per each *event loop* to provide just the same data, unless operations try to change the nature of the object (see `reset` on `setPrototypeOf` as example)
+
+These are just a few use cases that I have encountered but it feels to me that a timeout, in general, is a good thing to have, which is why that's embedded as extra *Proxy Handler* field (and same goes for `Cached` suffix, to escape in some case caching entirely).
+
+
 ### Special Cases + `Cached` suffix
 
   * **arrays** have a `get` trap that *resets* the *cache* if the retrieved property is neither `length` nor an `index` (an unsigned integer, 0 to max array length). This makes usage of a *timeout* almost irrevelant because methods that mutate the array should *drop* properties as needed.
