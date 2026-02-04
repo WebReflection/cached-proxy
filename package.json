@@ -1,6 +1,6 @@
 {
   "name": "cached-proxy",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A cached Proxy with optional timeouts per property to simplify complex remote scenarios",
   "main": "index.js",
   "module": "index.js",
