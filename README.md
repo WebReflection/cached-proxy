@@ -2,6 +2,8 @@
 
 [![build status](https://github.com/WebReflection/cached-proxy/actions/workflows/node.js.yml/badge.svg)](https://github.com/WebReflection/cached-proxy/actions) [![Coverage Status](https://coveralls.io/repos/github/WebReflection/cached-proxy/badge.svg?branch=main)](https://coveralls.io/github/WebReflection/cached-proxy?branch=main)
 
+<sup>**Social Media Photo by [Bozhin Karaivanov](https://unsplash.com/@bkaraivanov) on [Unsplash](https://unsplash.com/)**</sup>
+
 A cached Proxy with optional timeouts per property to simplify complex remote scenarios.
 
 ```js
