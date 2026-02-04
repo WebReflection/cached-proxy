@@ -170,5 +170,5 @@ const reset = ref => {
   return ref;
 };
 
-export { Proxy, drop, reset };
+export { drop, reset };
 export default Proxy;

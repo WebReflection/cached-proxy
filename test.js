@@ -1,4 +1,4 @@
-import { Proxy } from './index.js';
+import Proxy, { drop, reset } from './index.js';
 
 const assert = (condition, message) => {
   if (!condition) {

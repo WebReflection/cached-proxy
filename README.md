@@ -31,3 +31,51 @@ setTimeout(() => {
 ```
 
 The example is there to explain that given enough amount of traps, it is possible via *Atomics* or synchronous / asynchronous behavior to retrieve once properties and values from elsewhere, similarly to how [reflected-ffi](https://github.com/WebReflection/reflected-ffi) memoized cache works but in an easier to orchestrate way.
+
+### Traps
+
+|                          | cached | timeout | drop | reset |
+| :----------------------- | :----: | :-----: | :--: | :---: |
+| apply                    |        |         |      |       |
+| construct                |        |         |      |       |
+| defineProperty           |        |         |  ☑️  |       |
+| deleteProperty           |        |         |  ☑️  |       |
+| get                      |   ☑️   |   ☑️   |      |       |
+| getOwnPropertyDescriptor |   ☑️   |   ☑️   |      |       |
+| getPrototypeOf           |   ☑️   |         |      |       |
+| has                      |   ☑️   |   ☑️   |      |       |
+| isExtensible             |   ☑️   |         |      |       |
+| ownKeys *                |   ☑️   |   ✔️   |      |       |
+| preventExtensions        |        |         |       |       |
+| set                      |        |         |  ☑️  |       |
+| setPrototypeOf           |        |         |       |  ☑️  |
+
+#### Traps Explainer
+
+  * **cached** means each trap result is weakly stored
+  * **timeout** means that, if a `timeout` optional integer is passed as *proxy handler* field, `get`, `getOwnPropertyDescriptor` and `has` will be *dropped* after that amount of time (in milliseconds)
+  * **drop** means that the eventually stored value for that property or accessor will be instantly removed from the *cache*, affecting also `ownKeys` but without affecting `isExtensible` and `getPrototypeOf`
+  * **reset** means that all weakly related values will be erased per property or target reference, effectively invalidating the whole cache for any trap that has one
+
+The `drop` and `reset` utilities are also exposed via the module where `drop(ref, property)` will invalidate the cache per specific property while `reset(ref)` will invalidate the whole cache per specific *reference*.
+
+Please note: the *reference* is not the *proxied* one, it's the original one you must own, otherwise nothing will happen/work as expected, example:
+
+```js
+import Proxy, { drop, reset  } from 'https://esm.run/cached-proxy';
+
+const ref = { my: 'reference' };
+const proxied = Proxy(ref);
+
+// when/if needed, this works:
+drop(ref, 'property');
+// ... or ...
+reset(ref);
+
+// while this will not work:
+drop(proxied, 'property');
+// ... or ...
+reset(proxied);
+```
+
+This is to avoid leaking the cache intent of the proxy owner/creator.
