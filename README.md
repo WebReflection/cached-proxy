@@ -90,7 +90,7 @@ On the other hand, the *timeout* helps keeping cached results just temporarily w
 
   * less RAM needed overall, occasionally things will get cached again which is better than keeping everything cached overtime
   * the remote reference might change overtime so that synchronous code would ask for new results once but it will free itself from those results (cached assumptions) next time it runs
-    * this is great with listeners that triger not too frequently
+    * this is great with listeners that trigger not too frequently
     * this is also great for references that are not meant to change that much within a small amount of time (in milliseconds)
   * the remote reference has a known cadence of changes (i.e. a scheduled operation that triggers every 30 seconds) and within those 30 seconds it's pointless to ask for the exact same result again
   * the remote reference uses an expensive computation that doesn't need to be *real time* but could be retrieved occasionally, so that a *click* that asks for updates, if repeatedly clicked, would give for at least 1 second the same result, but eventually will return a new result and provide the same result for another second
